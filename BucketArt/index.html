@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bucket Art – Venkatesh Rao</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* Basic page layout: similar minimalist feel to venkateshrao.com */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #111;
+      background-color: #ffffff;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 2rem auto 4rem auto;
+      padding: 0 1rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+    }
+
+    header p.lead {
+      margin: 0 0 1.5rem 0;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    /* Gallery grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .gallery-item {
+      cursor: pointer;
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      border-radius: 4px;
+      background-color: #fafafa;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    .gallery-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+      transform: translateY(-1px);
+    }
+
+    .thumb-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 66%; /* 3:2 placeholder aspect ratio */
+      overflow: hidden;
+      background-color: #eee;
+    }
+
+    .thumb-wrapper img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* crops while preserving aspect ratio */
+      display: block;
+    }
+
+    .gallery-item figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #222;
+    }
+
+    /* Lightbox modal */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none; /* toggled via JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1.5rem;
+    }
+
+    .lightbox.is-open {
+      display: flex;
+    }
+
+    .lightbox-inner {
+      max-width: 96vw;
+      max-height: 96vh;
+      background: #111;
+      color: #f5f5f5;
+      padding: 0.75rem 0.75rem 0.9rem 0.75rem;
+      border-radius: 4px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .lightbox-image-wrapper {
+      max-height: 80vh;
+      text-align: center;
+    }
+
+    .lightbox-image-wrapper img {
+      max-width: 100%;
+      max-height: 80vh;
+      height: auto;
+      width: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .lightbox-title {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      text-align: left;
+      color: #f5f5f5;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.35rem;
+      border: none;
+      background: transparent;
+      color: #ccc;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.1rem 0.3rem;
+    }
+
+    .lightbox-close:hover {
+      color: #ffffff;
+    }
+
+    /* Small-screen tweaks */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      .gallery-item {
+        padding: 0.4rem;
+      }
+
+      .lightbox-inner {
+        padding: 0.6rem 0.6rem 0.8rem 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <!-- Edit this title/description for the gallery -->
+      <h1>Bucket Art</h1>
+<p class="lead"><a href="https://venkateshrao.com">Back to main site</a></p>
+      <p class="lead">
+        A mini-project of digital paintings made with Autodesk Sketchbook on iPad/Pencil in October/November 2025. I call it bucket art because the main tool is the fill tool (usually a bucket icon in painting programs). The technique starts with laying down an interesting base layer using grids, textured brushes, and patterns of random strokes, spotting interesting image possibilities. I then use the bucket tool to  tease the possibilities out. The trick is to lay down a base layer that interacts well with the fill tool. The technique started out as a couple of idle doodles in a notebook during a long meeting that inspired the digital technique. The original doodles as well as teh base layer approach are in the first gallery image.
+     </p>
+     <p class="lead">
+        Most are loosely representatitional or figurative, but there are a few abstract ones too, which are really studies where I worked out techniques. Some motifs -- ships, waterfalls, skylines -- proved easy to generate in reliably repeatable ways. One impulse behind this project was to explore an approach to <emph>protocol art</emph>, via a tension between human seeing/pareidolia and algorithmic "painting kernels" (like the fill tool, grid tool, and texture tool). Another goal was to try and "see like an image generator" using low-level kernels of the sort used by AI image generators, such as diffusion and stochastic field primitives. I plan to use these images to train an image generator and see if it picks up on the underlying protocol.
+      </p>
+    </header>
+
+    <main>
+      <section class="gallery">
+        <div class="gallery-grid">
+          <!--
+            TEMPLATE FOR EACH IMAGE:
+
+            <figure class="gallery-item"
+                    data-full="images/full/your-image.png"
+                    data-title="Your Image Title">
+              <div class="thumb-wrapper">
+                <img src="images/thumbs/your-image.png"
+                     alt="Your Image Title"
+                     loading="lazy">
+              </div>
+              <figcaption>Your Image Title</figcaption>
+            </figure>
+
+            You can use the same file for data-full and src if you don't have separate thumbs.
+          -->
+
+          <!-- Example items: replace with your real images/titles and duplicate as needed -->
+
+          <figure class="gallery-item"
+                  data-full="images/full/bucketart.PNG"
+                  data-title="00: Bucket Art Basics">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/bucketart.PNG"
+                   alt="00: Bucket Art Basics"
+                   loading="lazy">
+            </div>
+            <figcaption>00: Bucket Art Basics</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/01boat1.PNG"
+                  data-title="01: Boat 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/01boat1.PNG"
+                   alt="01: Boat 1"
+                   loading="lazy">
+            </div>
+            <figcaption>01: Boat 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/02abstract1.PNG"
+                  data-title="02: Abstract 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/02abstract1.PNG"
+                   alt="02: Abstract 1"
+                   loading="lazy">
+            </div>
+            <figcaption>02: Abstract 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/03abstract2.PNG"
+                  data-title="03: Abstract 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/03abstract2.PNG"
+                   alt="03: Abstract 2"
+                   loading="lazy">
+            </div>
+            <figcaption>03: Abstract 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/04waterfall1.PNG"
+                  data-title="04: Waterfall 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/04waterfall1.PNG"
+                   alt="04: Waterfall 1"
+                   loading="lazy">
+            </div>
+            <figcaption>04: Waterfall 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/05surveillance1.PNG"
+                  data-title="05 Surveillance 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/05surveillance1.PNG"
+                   alt="05: Surveillance 1"
+                   loading="lazy">
+            </div>
+            <figcaption>05: Surveillance 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/06surveillance2.PNG"
+                  data-title="06: Surveillance 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/06surveillance2.PNG"
+                   alt="06: Surveillance 2"
+                   loading="lazy">
+            </div>
+            <figcaption>06: Surveillance 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/07boat2.PNG"
+                  data-title="07: Boat 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/07boat2.PNG"
+                   alt="07: Boat 2"
+                   loading="lazy">
+            </div>
+            <figcaption>07: Boat 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/08waterfall2.PNG"
+                  data-title="08: Waterfall 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/08waterfall2.PNG"
+                   alt="08: Waterfall 2"
+                   loading="lazy">
+            </div>
+            <figcaption>08: Waterfall 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/09abstract3.PNG"
+                  data-title="09: Abstract 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/09abstract3.PNG"
+                   alt="09: Abstract 3"
+                   loading="lazy">
+            </div>
+            <figcaption>09: Abstract 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/10boat3.PNG"
+                  data-title="10: Boat 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/10boat3.PNG"
+                   alt="10: Boat 3"
+                   loading="lazy">
+            </div>
+            <figcaption>10: Boat 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/11waterfall3.PNG"
+                  data-title="11: Waterfall 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/11waterfall3.PNG"
+                   alt="11: Waterfall 3"
+                   loading="lazy">
+            </div>
+            <figcaption>11: Waterfall 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/12sun1.PNG"
+                  data-title="12: Sun 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/12sun1.PNG"
+                   alt="12: Sun 1"
+                   loading="lazy">
+            </div>
+            <figcaption>12: Sun 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/13waterfall4.PNG"
+                  data-title="13: Waterfall 4">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/13waterfall4.PNG"
+                   alt="13: Waterfall 4"
+                   loading="lazy">
+            </div>
+            <figcaption>13: Waterfall 4</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/14surveillance3.PNG"
+                  data-title="14: Surveillance 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/14surveillance3.PNG"
+                   alt="14: Surveillance 3"
+                   loading="lazy">
+            </div>
+            <figcaption>14: Surveillance 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/15Sun2.PNG"
+                  data-title="15: Sun 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/15Sun2.PNG"
+                   alt="15: Sun 2"
+                   loading="lazy">
+            </div>
+            <figcaption>15: Sun 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/16hud1.PNG"
+                  data-title="16: HUD 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/16hud1.PNG"
+                   alt="16: HUD 1"
+                   loading="lazy">
+            </div>
+            <figcaption>16: HUD 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/17waterfall5.PNG"
+                  data-title="17: Waterfall 5">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/17waterfall5.PNG"
+                   alt="17: Waterfall 5"
+                   loading="lazy">
+            </div>
+            <figcaption>17: Waterfall 5</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/18surveillance4.PNG"
+                  data-title="18: Surveillance 4">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/18surveillance4.PNG"
+                   alt="18: Surveillance 4"
+                   loading="lazy">
+            </div>
+            <figcaption>18: Surveillance 4</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/19boat4.PNG"
+                  data-title="19: Boat 4">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/19boat4.PNG"
+                   alt="19: Boat 4"
+                   loading="lazy">
+            </div>
+            <figcaption>19: Boat 4</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/20surveillance5.PNG"
+                  data-title="20: Surveillance 5">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/20surveillance5.PNG"
+                   alt="20: Surveillance 5"
+                   loading="lazy">
+            </div>
+            <figcaption>20: Surveillance 5</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/21boat5.PNG"
+                  data-title="21: Boat 5">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/21boat5.PNG"
+                   alt="21: Boat 5"
+                   loading="lazy">
+            </div>
+            <figcaption>21: Boat 5</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/22surveillance6.PNG"
+                  data-title="22: Surveillance 6">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/22surveillance6.PNG"
+                   alt="22: Surveillance 6"
+                   loading="lazy">
+            </div>
+            <figcaption>22: Surveillance 6</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/23surveillance7.PNG"
+                  data-title="23: Surveillance 7">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/23surveillance7.PNG"
+                   alt="23: Surveillance 7"
+                   loading="lazy">
+            </div>
+            <figcaption>23: Surveillance 7</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/24boat6.PNG"
+                  data-title="24: Boat 6">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/24boat6.PNG"
+                   alt="24: Boat 6"
+                   loading="lazy">
+            </div>
+            <figcaption>24: Boat 6</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/25selfie1.PNG"
+                  data-title="25: Selfie 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/25selfie1.PNG"
+                   alt="25: Selfie 1"
+                   loading="lazy">
+            </div>
+            <figcaption>25: Selfie 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/26hud2.PNG"
+                  data-title="26: HUD 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/26hud2.PNG"
+                   alt="26: HUD 2"
+                   loading="lazy">
+            </div>
+            <figcaption>26: HUD 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/27boat7.PNG"
+                  data-title="27: Boat 7">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/27boat7.PNG"
+                   alt="27: Boat 7"
+                   loading="lazy">
+            </div>
+            <figcaption>27: Boat 7</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/28skyline1.PNG"
+                  data-title="28: Skyline 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/28skyline1.PNG"
+                   alt="28: Skyline 1"
+                   loading="lazy">
+            </div>
+            <figcaption>28: Skyline 1</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/29skyline2.PNG"
+                  data-title="29: Skyline 2">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/29skyline2.PNG"
+                   alt="29: Skyline 2"
+                   loading="lazy">
+            </div>
+            <figcaption>29: Skyline 2</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/30surveillance8.PNG"
+                  data-title="30: Surveillance 8">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/30surveillance8.PNG"
+                   alt="30: Surveillance 8"
+                   loading="lazy">
+            </div>
+            <figcaption>30: Surveillance 8</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/31waterfall6.PNG"
+                  data-title="31: Waterfall 6">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/31waterfall6.PNG"
+                   alt="31: Waterfall 6"
+                   loading="lazy">
+            </div>
+            <figcaption>31: Waterfall 6</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/32sun3.PNG"
+                  data-title="32: Sun 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/32sun3.PNG"
+                   alt="32: Sun 3"
+                   loading="lazy">
+            </div>
+            <figcaption>32: Sun 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/33surveillance9.PNG"
+                  data-title="33: Surveillance 9">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/33surveillance9.PNG"
+                   alt="33: Surveillance 9"
+                   loading="lazy">
+            </div>
+            <figcaption>33: Surveillance 9</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/34boat8.PNG"
+                  data-title="34: Boat 8">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/34boat8.PNG"
+                   alt="34: Boat 8"
+                   loading="lazy">
+            </div>
+            <figcaption>34: Boat 8</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/35surveillance10.PNG"
+                  data-title="35: Surveillance 10">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/35surveillance10.PNG"
+                   alt="35: Surveillance 10"
+                   loading="lazy">
+            </div>
+            <figcaption>35: Surveillance 10</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/36skyline3.PNG"
+                  data-title="36: Skyline 3">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/36skyline3.PNG"
+                   alt="36: Skyline 3"
+                   loading="lazy">
+            </div>
+            <figcaption>36: Skyline 3</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/37boat9.PNG"
+                  data-title="37: Boat 9">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/37boat9.PNG"
+                   alt="37: Boat 9"
+                   loading="lazy">
+            </div>
+            <figcaption>37: Boat 9</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/38waterfall7.PNG"
+                  data-title="38: Waterfall 7">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/38waterfall7.PNG"
+                   alt="38: Waterfall 7"
+                   loading="lazy">
+            </div>
+            <figcaption>38: Waterfall 7</figcaption>
+          </figure>
+
+          <figure class="gallery-item"
+                  data-full="images/full/39kitchensink1.PNG"
+                  data-title="39: Kitchensink 1">
+            <div class="thumb-wrapper">
+              <img src="images/thumbs/39kitchensink1.PNG"
+                   alt="39: Kitchensink 1"
+                   loading="lazy">
+            </div>
+            <figcaption>39: Kitchensink 1</figcaption>
+          </figure>
+
+          <!-- Add more <figure> blocks here up to 40–50 images -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Lightbox modal -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-inner" role="dialog" aria-modal="true" aria-labelledby="lightbox-title">
+      <button class="lightbox-close" type="button" aria-label="Close">&times;</button>
+      <div class="lightbox-image-wrapper">
+        <img id="lightbox-image" src="" alt="">
+      </div>
+      <div class="lightbox-title" id="lightbox-title"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var lightbox = document.getElementById('lightbox');
+      var lightboxImage = document.getElementById('lightbox-image');
+      var lightboxTitle = document.getElementById('lightbox-title');
+      var closeButton = lightbox.querySelector('.lightbox-close');
+      var lastFocused = null;
+
+      function openLightbox(fullSrc, title) {
+        if (!fullSrc) return;
+
+        lastFocused = document.activeElement;
+
+        lightboxImage.src = fullSrc;
+        lightboxImage.alt = title || '';
+        lightboxTitle.textContent = title || '';
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+
+        // Move focus into the dialog
+        closeButton.focus();
+      }
+
+      function closeLightbox() {
+        lightbox.classList.remove('is-open');
+        lightbox.setAttribute('aria-hidden', 'true');
+
+        // Clear image to free memory on very large images
+        lightboxImage.src = '';
+        lightboxImage.alt = '';
+
+        if (lastFocused && typeof lastFocused.focus === 'function') {
+          lastFocused.focus();
+        }
+      }
+
+      // Delegate clicks on gallery items
+      document.addEventListener('click', function (event) {
+        var item = event.target.closest('.gallery-item');
+        if (!item) return;
+
+        var fullSrc = item.getAttribute('data-full') || '';
+        var title = item.getAttribute('data-title') || item.querySelector('figcaption')?.textContent || '';
+
+        openLightbox(fullSrc, title);
+      });
+
+      // Close button
+      closeButton.addEventListener('click', function () {
+        closeLightbox();
+      });
+
+      // Click outside inner box closes
+      lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      // ESC key closes
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && lightbox.classList.contains('is-open')) {
+          closeLightbox();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
