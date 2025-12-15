@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bucket Art – Venkatesh Rao</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* Basic page layout: similar minimalist feel to venkateshrao.com */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #111;
+      background-color: #ffffff;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 2rem auto 4rem auto;
+      padding: 0 1rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+    }
+
+    header p.lead {
+      margin: 0 0 1.5rem 0;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    /* Collapsible intro */
+    .intro {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .intro.collapsed {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3; /* show ~2–3 lines depending on viewport */
+      overflow: hidden;
+    }
+
+    .intro-toggle {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: #0066cc;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .intro-toggle:focus {
+      outline: 1px solid #0066cc;
+      outline-offset: 2px;
+    }
+
+    /* Gallery grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .gallery-item {
+      cursor: pointer;
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      border-radius: 4px;
+      background-color: #fafafa;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    .gallery-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+      transform: translateY(-1px);
+    }
+
+    .thumb-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 66%; /* 3:2 placeholder aspect ratio */
+      overflow: hidden;
+      background-color: #eee;
+    }
+
+    .thumb-wrapper img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* crops while preserving aspect ratio */
+      display: block;
+    }
+
+    .gallery-item figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #222;
+    }
+
+    /* Lightbox modal */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none; /* toggled via JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1.5rem;
+    }
+
+    .lightbox.is-open {
+      display: flex;
+    }
+
+    .lightbox-inner {
+      max-width: 96vw;
+      max-height: 96vh;
+      background: #111;
+      color: #f5f5f5;
+      padding: 0.75rem 0.75rem 0.9rem 0.75rem;
+      border-radius: 4px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .lightbox-image-wrapper {
+      max-height: 80vh;
+      text-align: center;
+    }
+
+    .lightbox-image-wrapper img {
+      max-width: 100%;
+      max-height: 80vh;
+      height: auto;
+      width: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .lightbox-title {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      text-align: left;
+      color: #f5f5f5;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.35rem;
+      border: none;
+      background: transparent;
+      color: #ccc;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.1rem 0.3rem;
+    }
+
+    .lightbox-close:hover {
+      color: #ffffff;
+    }
+
+    /* Carousel nav buttons */
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: rgba(0, 0, 0, 0.4);
+      color: #f5f5f5;
+      font-size: 1.8rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.4rem 0.6rem;
+      border-radius: 3px;
+      user-select: none;
+    }
+
+    .lightbox-prev {
+      left: 0.25rem;
+    }
+
+    .lightbox-next {
+      right: 0.25rem;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Small-screen tweaks */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      .gallery-item {
+        padding: 0.4rem;
+      }
+
+      .lightbox-inner {
+        padding: 0.6rem 0.6rem 0.8rem 0.6rem;
+      }
+
+      .lightbox-nav {
+        font-size: 1.4rem;
+        padding: 0.3rem 0.45rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>How to make Bucket Art</h1>
+      <p class="lead"><a href="index.html">Back to main gallery page</a>
+      <hr>
+      <!-- Collapsible intro -->
+      </header>
+
+    <main>
+      <p>
+        A brief note on the technique I use to make hand-crafted Bucket Art, which might be interesting both to those who want to make similar paintings, and to those wondering what elements the AI model has picked up on. I'll eventually add a demo video to this page, but until then hopefully this recipe is good enough. If you just want custom images in this style, just use the <a href="https://titles.xyz/model/Y9EP0HA0BXRvuNbm23ir">trained model on titlex.xyz</a>.</p>
+      <p>
+        The basic idea is to lay down interesting textured backdrops comprising grids, textured brush strokes, and random strikes, then use the flood fill tool to tease out interesting images. It's like Jackson Pollock's technique applied to a digital canvas where paint flows in much more interesting and controlled ways due to the prepared backdrop. The idea was born of some meeting doodles.</p>
+        <div align="center"><p><img src="images/full/bucketart.png" width="50%"></p></div>
+      <p>
+        I call it bucket art because the main tool is the flood fill tool, usually represented with the bucket icon in painting apps. Here is what it looks like in the app I use, Autodesk Sketchbook on iPad.</p>
+        <div align="center"><p><img src="buckettool.webp" width="75%"></p></div>
+
+      <p>
+        The tolerance parameter is usually available in the better painting programs to control how easily the flood fill color leaks through gaps in sketches. If you want to try your hand at bucket art, you should probably use an app that has a bucket tool with a tolerance.</p>
+      <p>
+        I call the technique Bucket Art because it relies heavily on the bucket tool. Normally, it’s just a boring convenience tool, designed to quickly fill large bounded areas with a particular color, with or without a gradient. Where the bucket gets to be fun is if you use it on complex backdrops that include a lot of complex intersecting geometry and textured elements. If you play with the tolerance and try to flood fill such a backdrop from various points (the technique is very sensitive to the precise point you pick), you get very interesting, organic-machinic effects. You need to do quite a bit of trial and error, and add constraining boundaries to the backdrop along the way, which is why this is only workable as a digital art technique. You have to repeatedly undo actions in search of ones that do things you like.</p>
+      <p>
+        Though the term bucket might have Jackson Pollock type connotations, the reversibility of digital buckets and the behavior of the flood fill algorithm (which I’ll call a painting kernel by analogy with low-level computing kernels) cannot be achieved with analog tools.</p>
+      <p>
+        The basic technique to create bucket art is very easy and takes no drawing skill at all. All it requires is an eye for spotting interesting patterns emerging, and developing those patterns by trial and error. Here is the algorithm:</p>
+    <ul>
+      <li><strong>First,</strong> lay down an interesting abstract background pattern across large parts of the canvas. Grids (my app offers a grid brush), random strokes (either platonic primates like the lines, rectangles,  or circles my tool offers, or freehand), or textured brushes. My app offers a variety of interesting grids and brushes. My two favorites are the basic square grid and one that sort of looks like rough scrubby grass. At this stage, it’s helpful sometimes to keep different elements of the backdrop on separate layers, and merge them strategically depending on how you want the next step to behave.</li>
+
+      <div align="center"><p><img src="gridsandtextures.webp" width="25%"></p></div>
+
+      <li><strong>Second,</strong> you get into the trial-and-error with the bucket tool, trying to get interesting effects. In a flat geometry with large bounded regions, the bucket tool simply creates large, uninteresting, flat fill areas. But on a textured backdrop, you have get all sorts of interesting diffusion effects. Tricks to try: repeatedly apply the same fill to the same point, especially with grid backdrops — you can progressive beading and “thickening” effects.</li>
+
+      <li><strong>Third,</strong> let your pareidolia (the tendency to see meaningful patterns in random input) cut loose. Watch for interesting shapes to emerge as you play with the bucket. As you spot a possibility you like, start nudging the bucket behavior towards emphasizing it, and converging on a color palette to help the image “appear.” I like to think of this as the image disclosing itself to you. It’s already there, latent in the dense information substrate you laid down in Step 1 (fun fact: there is a field in mathematics called Ramsey theory that explores how patterns start to emerge in random fields; for example if you randomly start making dots on a piece of paper, at n=3 you’ll almost certainly get a triangle).</li>
+
+      <li><strong>Fourth,</strong> if you really want to develop the picture well, it may be worth doing another round of textured-backdrop —> bucket fill games on a new set of layers. The ship example above has such a supporting feature — the abstract sun in the background.</li>
+    </ul>
+
+    <p>
+      You may already have a motif in mind that you’re trying to “solve” for, like a ship, waterfall, or skyline (some of my favorites), in which case you can nudge or distort the flood-fill game with constraining strokes, but be open to happy accidents. Don’t overdetermine the initial backdrop. If you’re aiming for ships, a two-tone textured backdrop for “sky” and “water” plus a few more vertical strokes that encourage ship-like contours to emerge is enough. Don’t try to sketch entire ships or wave patterns. A good rule of thumb is to never do anything strictly local. Everything should be a global pattern that perhaps has higher amplitude in some local areas.</p>
+    </main>
+  </div>
+
+  <!-- Lightbox modal -->
+
+</body>
+</html>
