@@ -59,7 +59,7 @@
 .tweet.featured.tag-idea       { background: #e0f7fa; border-color: #b2ebf2; }
 .tweet.featured.tag-ascii      { background: #f0ebe1; border-color: #d9d0c4; }
 
-/* Star indicator */
+/* Star indicator (unused, kept for reference) */
 .tweet-star {
   position: absolute;
   top: 0.4rem;
@@ -67,6 +67,23 @@
   font-size: 0.85rem;
   color: #c8a000;
   opacity: 0.8;
+}
+
+/* Permalink anchor */
+.tweet-permalink {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.4rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  opacity: 0.25;
+  transition: opacity 0.15s;
+}
+.compendium-tweet:hover .tweet-permalink {
+  opacity: 0.6;
+}
+.tweet-permalink:hover {
+  opacity: 1 !important;
 }
 
 /* ASCII tweets */
