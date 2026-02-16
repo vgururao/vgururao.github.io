@@ -45,5 +45,6 @@
   </div>
   <a class="float-nav float-nav-prev" href="../index.html" title="Previous chapter"><span class="float-nav-chevron">&lsaquo;</span><span class="float-nav-label">Ch. &minus;</span></a>
 <div class="float-nav-right"><a class="float-nav-btn float-nav-toc" href="../toc.html" title="Table of Contents"><span class="float-nav-chevron">&and;</span><span class="float-nav-label">ToC</span></a><a class="float-nav-btn float-nav-next" href="../toc.html" title="Next chapter"><span class="float-nav-chevron">&rsaquo;</span><span class="float-nav-label">Ch. +</span></a></div>
+<script>document.addEventListener("keydown",function(e){if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;if(e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;var a;if(e.key==="ArrowLeft")a=document.querySelector(".float-nav-prev");else if(e.key==="ArrowRight")a=document.querySelector(".float-nav-next");if(a){e.preventDefault();a.click();}});</script>
 </body>
 </html>
