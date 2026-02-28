@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publishing Dashboard</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --border: #0f3460;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #4caf50;
+    --amber: #ff9800;
+    --red: #f44336;
+    --blue: #2196f3;
+    --purple: #9c77db;
+    --gray: #666;
+    --dim: #444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    background: var(--bg);
+    color: var(--text);
+    padding: 2rem;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .ctrl-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: inherit;
+  }
+  .ctrl-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:hover { background: var(--surface); }
+  /* Group header row */
+  .group-header { cursor: pointer; user-select: none; }
+  .group-header td {
+    padding-top: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: none;
+  }
+  .group-header:hover td { background: var(--surface); }
+  .group-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--blue);
+  }
+  .toggle-icon {
+    display: inline-block;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    vertical-align: middle;
+    margin-right: 0.1em;
+  }
+  .group-count {
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 0.75rem;
+  }
+  /* Rollup cells in group header */
+  .rollup { font-size: 0.75rem; }
+  .rsep { color: var(--dim); margin: 0 0.2em; }
+  /* Color utility classes (used in rollup spans) */
+  .c-green  { color: var(--green); }
+  .c-amber  { color: var(--amber); }
+  .c-red    { color: var(--red); }
+  .c-blue   { color: var(--blue); }
+  .c-gray   { color: var(--gray); }
+  .c-dim    { color: var(--dim); }
+  /* Standard item row cells */
+  .project-name { font-weight: 500; }
+  .edition { color: var(--text-dim); font-weight: 400; font-size: 0.8rem; }
+  .source { color: var(--text-dim); }
+  .modified { color: var(--text-dim); font-size: 0.8rem; }
+  .status-cell {
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  .status-cell.green  { color: var(--green); }
+  .status-cell.amber  { color: var(--amber); }
+  .status-cell.red    { color: var(--red); }
+  .status-cell.blue   { color: var(--blue); }
+  .status-cell.purple { color: var(--purple); }
+  .status-cell.gray   { color: var(--gray); }
+  .status-cell.dim    { color: var(--dim); }
+  /* Untracked section */
+  .untracked {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px dashed var(--amber);
+    border-radius: 4px;
+  }
+  .untracked h2 { font-size: 0.9rem; color: var(--amber); margin-bottom: 0.5rem; }
+  .untracked ul { list-style: none; padding: 0; }
+  .untracked li { color: var(--text-dim); font-size: 0.85rem; padding: 0.2rem 0; }
+  .untracked li::before { content: "? "; color: var(--amber); font-weight: bold; }
+  .untracked .hint { color: var(--text-dim); font-size: 0.75rem; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<h1>Publishing Dashboard</h1>
+<div class="subtitle">
+  <span>Last built: 2026-02-27 17:06</span>
+  <span>&middot;</span>
+  <span>41 tracked</span>
+  <span>&middot;</span>
+  <span>30 with planned work</span>
+  <button class="ctrl-btn" onclick="collapseAll()">Collapse all</button>
+  <button class="ctrl-btn" onclick="expandAll()">Expand all</button>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Source</th>
+      <th>Status</th>
+      <th>Site</th>
+      <th>Ebook</th>
+      <th>Print</th>
+      <th>Updated</th>
+    </tr>
+  </thead>
+  <tbody>
+<tr class="group-header" onclick="toggleGroup('grp-be-slightly-evil')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-be-slightly-evil">▼</span>&nbsp;Be Slightly Evil&nbsp;<span class="group-count">2 editions</span></td><td class="rollup"><span class="c-dim">1&thinsp;–</span><span class="rsep">·</span><span class="c-dim">1&thinsp;n/a</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">1&thinsp;–</span></td><td class="rollup"><span class="c-dim">1&thinsp;–</span><span class="rsep">·</span><span class="c-dim">1&thinsp;n/a</span></td><td></td></tr>
+<tr data-group="grp-be-slightly-evil"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Be Slightly Evil <span class="edition">(Legacy)</span></td><td class="source">Email list (retired, no longer exists)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Split HTML in bse/ but not deployed anywhere">n/a</td><td class="status-cell green" title="3 .epub variants (2013); LaTeX source in bse-tex/">existing</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-be-slightly-evil"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Be Slightly Evil <span class="edition">(New Edition (planned))</span></td><td class="source">Email list (retired, no longer exists)</td><td class="status-cell purple">legacy</td><td class="status-cell gray" title="Online book (static site)">not-started</td><td class="status-cell gray" title="Via Vellum">not-started</td><td class="status-cell gray" title="Via Vellum">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-breakingsmart')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-breakingsmart">▼</span>&nbsp;BreakingSmart&nbsp;<span class="group-count">2 editions</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">1&thinsp;–</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">1&thinsp;n/a</span></td><td class="rollup"><span class="c-dim">2&thinsp;n/a</span></td><td></td></tr>
+<tr data-group="grp-breakingsmart"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Breaking Smart: How Software is Eating the World <span class="edition">(Current)</span></td><td class="source">breakingsmart.com (standalone site, currently WordPress)</td><td class="status-cell purple">legacy</td><td class="status-cell green" title="Live at breakingsmart.com (WordPress); includes German and French translations">existing</td><td class="status-cell green" title="Kindle on Amazon; .epub and .mobi versions locally. Final — no new ebook edition planned.">existing</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-breakingsmart"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Breaking Smart: How Software is Eating the World <span class="edition">(Static Site (planned))</span></td><td class="source">breakingsmart.com (standalone site, currently WordPress)</td><td class="status-cell purple">legacy</td><td class="status-cell gray" title="Migrate WordPress to static site (like Ribbonfarm)">not-started</td><td class="status-cell dim">n/a</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-breakingsmartnewsletterebook')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-breakingsmartnewsletterebook">▼</span>&nbsp;BreakingSmartNewsletterEbook&nbsp;<span class="group-count">2 editions</span></td><td class="rollup"><span class="c-dim">2&thinsp;n/a</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">1&thinsp;–</span></td><td class="rollup"><span class="c-dim">2&thinsp;n/a</span></td><td></td></tr>
+<tr data-group="grp-breakingsmartnewsletterebook"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Breaking Smart Archives — Selected Newsletters 2015-2019 <span class="edition">(Legacy (2020))</span></td><td class="source">Breaking Smart newsletter (now renamed Contraptions)</td><td class="status-cell purple">legacy</td><td class="status-cell dim">n/a</td><td class="status-cell green" title=".epub, .mobi, .pdf (2020)">existing</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-breakingsmartnewsletterebook"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Breaking Smart Archives — Selected Newsletters 2015-2019 <span class="edition">(New Edition (planned))</span></td><td class="source">Breaking Smart newsletter (now renamed Contraptions)</td><td class="status-cell purple">legacy</td><td class="status-cell dim">n/a</td><td class="status-cell gray" title="Via Vellum">not-started</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-configurancy')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-configurancy">▼</span>&nbsp;Configurancy&nbsp;<span class="group-count">4 volumes</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">3&thinsp;–</span></td><td class="rollup"><span class="c-dim">4&thinsp;–</span></td><td class="rollup"><span class="c-dim">4&thinsp;–</span></td><td></td></tr>
+<tr data-group="grp-configurancy"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Tempo</td><td class="source">Mixed (Tempo: original book; Vols 2-4: Contraptions Substack + new)</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Vellum; LaTeX source in Tempo/TexCore/">not-started</td><td class="status-cell gray" title="Via Vellum; original print edition existed (2011)">not-started</td><td class="modified">2026-02-27</td></tr>
+<tr data-group="grp-configurancy"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Indexicality</td><td class="source">Mixed (Tempo: original book; Vols 2-4: Contraptions Substack + new)</td><td class="status-cell gray">not-started</td><td class="status-cell green" title="Serialized at contraptions.venkateshrao.com (paywalled)">existing</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-27</td></tr>
+<tr data-group="grp-configurancy"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Divergence</td><td class="source">Mixed (Tempo: original book; Vols 2-4: Contraptions Substack + new)</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-27</td></tr>
+<tr data-group="grp-configurancy"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Liveness</td><td class="source">Mixed (Tempo: original book; Vols 2-4: Contraptions Substack + new)</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-27</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-contraptions')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-contraptions">▼</span>&nbsp;Contraptions&nbsp;<span class="group-count">3 books</span></td><td class="rollup"><span class="c-green">2&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">1&thinsp;–</span></td><td class="rollup"><span class="c-dim">3&thinsp;–</span></td><td class="rollup"><span class="c-dim">3&thinsp;–</span></td><td></td></tr>
+<tr data-group="grp-contraptions"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Great Weirding</td><td class="source">Contraptions (Substack, active)</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-contraptions"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Mediocre Computing</td><td class="source">Contraptions Substack</td><td class="status-cell gray">not-started</td><td class="status-cell green" title="Serialized at contraptions.venkateshrao.com (paywalled)">existing</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-contraptions"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;On Lore</td><td class="source">Contraptions Substack</td><td class="status-cell gray">not-started</td><td class="status-cell green" title="Serialized at contraptions.venkateshrao.com (paywalled)">existing</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr><td class="project-name">Cookbook (Family Recipes)</td><td class="source">Personal / family</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr><td class="project-name">Guerilla Guide to Social Business</td><td class="source">Enterprise 2.0 blog (defunct)</td><td class="status-cell purple">legacy</td><td class="status-cell gray" title="Low priority">maybe</td><td class="status-cell gray" title="Low priority">maybe</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-ribbonfarm-archives')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-ribbonfarm-archives">▼</span>&nbsp;Ribbonfarm Archives&nbsp;<span class="group-count">22 books</span></td><td class="rollup"><span class="c-green">1&thinsp;exists</span><span class="rsep">·</span><span class="c-amber">1&thinsp;active</span><span class="rsep">·</span><span class="c-dim">15&thinsp;–</span><span class="rsep">·</span><span class="c-dim">5&thinsp;n/a</span></td><td class="rollup"><span class="c-green">6&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">15&thinsp;–</span><span class="rsep">·</span><span class="c-dim">1&thinsp;n/a</span></td><td class="rollup"><span class="c-green">6&thinsp;exists</span><span class="rsep">·</span><span class="c-dim">15&thinsp;–</span><span class="rsep">·</span><span class="c-dim">1&thinsp;n/a</span></td><td></td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Captain's Log</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Clockmaking</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Crash Early, Crash Often</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Originally published on ribbonfarm.com (retired)">n/a</td><td class="status-cell green" title=".epub in folder">existing</td><td class="status-cell green" title="PDF in 005 subfolder">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Domestic Cozy</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Elderblog Sutra</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Fiction</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Getting Ahead, Getting Along (Rust Age Vol. 3)</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Originally published on ribbonfarm.com (retired)">n/a</td><td class="status-cell green" title="Two .epub versions (2012-2013); one in 003 subfolder">existing</td><td class="status-cell green" title="PDF in 003 subfolder">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Mediocratopia</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Narrativium</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Psychohistory</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Refactor Camp 2019</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Regenerations</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Ribbonfarm Static Site</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell amber">in-progress</td><td class="status-cell amber" title="Content extracted, SSG and templates TBD">in-progress</td><td class="status-cell dim">n/a</td><td class="status-cell dim">n/a</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Art of Refactored Perception (Rust Age Vol. 1)</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Originally published on ribbonfarm.com (retired)">n/a</td><td class="status-cell green" title="Two .epub versions in folder; one in 001 subfolder">existing</td><td class="status-cell green" title="PDF in 001 subfolder">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Gervais Principle <span class="edition">(Legacy (2013))</span></td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell green" title="Split HTML in gervaiszip/; LaTeX-generated HTML in gervais-tex/">existing</td><td class="status-cell green" title="Two .epub versions (2013)">existing</td><td class="status-cell green" title="PDF via LaTeX (gervais-tex/gervais.pdf)">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Gervais Principle <span class="edition">(Second Edition (planned))</span></td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell gray" title="Via static site project">not-started</td><td class="status-cell gray" title="Via Vellum">not-started</td><td class="status-cell gray" title="Via Vellum">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Mysteries of Money (Rust Age Vol. 4)</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Originally published on ribbonfarm.com (retired)">n/a</td><td class="status-cell green" title="Two .epub versions (2012-2013); one in 004 subfolder">existing</td><td class="status-cell green" title="PDF in 004 subfolder">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Thinkability</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Towards an Appreciative View of Technology (Rust Age Vol. 2)</td><td class="source">Ribbonfarm (blog)</td><td class="status-cell purple">legacy</td><td class="status-cell dim" title="Originally published on ribbonfarm.com (retired)">n/a</td><td class="status-cell green" title="Two .epub versions (2012-2013); one in 002 subfolder">existing</td><td class="status-cell green" title="PDF in 002 subfolder">existing</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Weirding Diary</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Worlding Raga</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr data-group="grp-ribbonfarm-archives"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Zemser</td><td class="source">Ribbonfarm</td><td class="status-cell gray">not-started</td><td class="status-cell gray" title="Via Ribbonfarm Static Site">not-started</td><td class="status-cell gray">not-started</td><td class="status-cell gray">not-started</td><td class="modified">2026-02-16</td></tr>
+<tr class="group-header" onclick="toggleGroup('grp-artofgig')"><td class="group-label" colspan="3"><span class="toggle-icon" id="icon-grp-artofgig">▼</span>&nbsp;artofgig&nbsp;<span class="group-count">3 volumes</span></td><td class="rollup"><span class="c-green">1&thinsp;done</span><span class="rsep">·</span><span class="c-green">2&thinsp;exists</span></td><td class="rollup"><span class="c-green">2&thinsp;exists</span><span class="rsep">·</span><span class="c-amber">1&thinsp;active</span></td><td class="rollup"><span class="c-green">2&thinsp;exists</span><span class="rsep">·</span><span class="c-amber">1&thinsp;active</span></td><td></td></tr>
+<tr data-group="grp-artofgig"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Foundations</td><td class="source">Art of Gig Substack (retired)</td><td class="status-cell gray">in-progress (Vol 3 manuscript pipeline active)</td><td class="status-cell green" title="Marketing page at artofgig.com">existing</td><td class="status-cell green" title="Kindle on Amazon; .epub in vol1/ (gitignored)">existing</td><td class="status-cell green" title="Paperback on Amazon">existing</td><td class="modified">2026-02-27</td></tr>
+<tr data-group="grp-artofgig"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;Superstructures</td><td class="source">Art of Gig Substack (retired)</td><td class="status-cell gray">in-progress (Vol 3 manuscript pipeline active)</td><td class="status-cell green" title="Marketing page at artofgig.com">existing</td><td class="status-cell green" title="Kindle on Amazon; .epub in vol2/ (gitignored)">existing</td><td class="status-cell green" title="Paperback on Amazon">existing</td><td class="modified">2026-02-27</td></tr>
+<tr data-group="grp-artofgig"><td class="project-name">&nbsp;&nbsp;&nbsp;&nbsp;The Yakverse Chronicles</td><td class="source">Art of Gig Substack (retired)</td><td class="status-cell gray">in-progress (Vol 3 manuscript pipeline active)</td><td class="status-cell green" title="Full text at artofgig.com (13 stories in docs/)">done</td><td class="status-cell amber" title=".docx generated; next: Vellum import">in-progress</td><td class="status-cell amber" title=".docx generated; next: Vellum import">in-progress</td><td class="modified">2026-02-27</td></tr>
+<tr><td class="project-name">VGR Twitter Book</td><td class="source">Twitter/X archive</td><td class="status-cell amber">in-progress</td><td class="status-cell green" title="Live at venkateshrao.com/twitter-book; v1.4">done</td><td class="status-cell amber" title=".docx generated via generate_vellum_docx.py; next: Vellum import">in-progress</td><td class="status-cell amber" title=".docx generated via generate_vellum_docx.py; next: Vellum import">in-progress</td><td class="modified">2026-02-27</td></tr>
+  </tbody>
+</table>
+
+<script>
+function toggleGroup(gid) {
+  var rows = document.querySelectorAll('tr[data-group="' + gid + '"]');
+  var icon = document.getElementById('icon-' + gid);
+  var isExpanded = icon.textContent === '▼';
+  rows.forEach(function(r) { r.style.display = isExpanded ? 'none' : ''; });
+  icon.textContent = isExpanded ? '▶' : '▼';
+}
+function collapseAll() {
+  document.querySelectorAll('[id^="icon-grp-"]').forEach(function(icon) {
+    var gid = icon.id.slice(5);
+    document.querySelectorAll('tr[data-group="' + gid + '"]').forEach(function(r) { r.style.display = 'none'; });
+    icon.textContent = '▶';
+  });
+}
+function expandAll() {
+  document.querySelectorAll('[id^="icon-grp-"]').forEach(function(icon) {
+    var gid = icon.id.slice(5);
+    document.querySelectorAll('tr[data-group="' + gid + '"]').forEach(function(r) { r.style.display = ''; });
+    icon.textContent = '▼';
+  });
+}
+</script>
+</body>
+</html>
