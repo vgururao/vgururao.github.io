@@ -96,9 +96,6 @@ let filtered = [];
 let currentPage = 1;
 
 function init() {
-  const dirs = [...new Set(allEntries.map(e => e.source_dir))].sort();
-  const dirSel = document.getElementById('dir-filter');
-  dirs.forEach(d => { const o = document.createElement('option'); o.value = o.textContent = d; dirSel.appendChild(o); });
 
   const years = [...new Set(allEntries.map(e => e.year).filter(Boolean))].sort((a,b) => b-a);
   const yearSel = document.getElementById('year-filter');
