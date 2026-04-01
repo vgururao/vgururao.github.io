@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Venkat's Library</title>
+<title>Venkatesh Rao's Document Library</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #222; }
@@ -50,19 +50,12 @@
 <body>
 
 <header>
-  <h1>Venkat's Library</h1>
+  <h1>Venkatesh Rao's Document Library</h1>
   <span id="total-count"></span><span style="margin-left:auto;font-size:0.78rem;opacity:0.5">Updated April 1, 2026</span>
 </header>
 
 <div class="controls">
   <input type="text" id="search" placeholder="Search title, author, summary, filename…" oninput="applyFilters()">
-  <label>Folder: <select id="folder-filter" onchange="applyFilters()">
-    <option value="">All</option>
-    <option value="STEM">STEM</option>
-    <option value="SocialSciences">SocialSciences</option>
-    <option value="Humanities">Humanities</option>
-    <option value="_inbox">_inbox</option>
-  </select></label>
   <label>Status: <select id="status-filter" onchange="applyFilters()">
     <option value="">All</option>
     <option value="unread">Unread</option>
@@ -73,24 +66,15 @@
   <label>Tag: <select id="tag-filter" onchange="applyFilters()"><option value="">All tags</option></select></label>
   <label>Dir: <select id="dir-filter" onchange="applyFilters()"><option value="">All dirs</option></select></label>
   <label>Year: <select id="year-filter" onchange="applyFilters()"><option value="">All years</option></select></label>
-  <label>Confidence: <select id="conf-filter" onchange="applyFilters()">
-    <option value="">All</option>
-    <option value="high">High</option>
-    <option value="medium">Medium</option>
-    <option value="low">Low</option>
-  </select></label>
 </div>
 
 <table>
   <thead>
     <tr>
-      <th>Filename</th>
-      <th>Folder</th>
       <th>Title / Author</th>
       <th>Year</th>
       <th>Summary</th>
       <th>Tags</th>
-      <th>Conf</th>
     </tr>
   </thead>
   <tbody id="table-body"></tbody>
@@ -165,13 +149,13 @@ function render() {
     const folderLabel = e.folder ? '<span class="' + folderClass + '">' + esc(e.folder) + '</span>' : esc(e.source_dir || '');
     const statusLabel = e.status ? '<br><span class="' + statusClass + '" style="font-size:0.72rem">' + esc(e.status) + '</span>' : '';
     return '<tr>' +
-      '<td class="filename">' + esc(e.new_path || e.original_path) + '</td>' +
-      '<td class="location">' + folderLabel + statusLabel + '</td>' +
+      
+      
       '<td class="title">' + esc(e.title || '') + '<br><span class="author">' + esc(e.author || '') + '</span></td>' +
       '<td class="year">' + (e.year || '—') + '</td>' +
       '<td class="summary">' + esc(e.summary || '') + '</td>' +
       '<td><div class="tag-pills">' + tagPills + '</div></td>' +
-      '<td><span class="conf-' + (e.confidence||'') + '">' + (e.confidence || '') + '</span></td>' +
+      
       '</tr>';
   }).join('');
 
