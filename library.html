@@ -56,6 +56,12 @@
 
 <div class="controls">
   <input type="text" id="search" placeholder="Search title, author, summary, filename…" oninput="applyFilters()">
+  <label>Folder: <select id="folder-filter" onchange="applyFilters()">
+    <option value="">All</option>
+    <option value="STEM">STEM</option>
+    <option value="SocialSciences">SocialSciences</option>
+    <option value="Humanities">Humanities</option>
+  </select></label>
   <label>Status: <select id="status-filter" onchange="applyFilters()">
     <option value="">All</option>
     <option value="unread">Unread</option>
@@ -64,7 +70,6 @@
     <option value="reference">Reference</option>
   </select></label>
   <label>Tag: <select id="tag-filter" onchange="applyFilters()"><option value="">All tags</option></select></label>
-  <label>Dir: <select id="dir-filter" onchange="applyFilters()"><option value="">All dirs</option></select></label>
   <label>Year: <select id="year-filter" onchange="applyFilters()"><option value="">All years</option></select></label>
 </div>
 
@@ -109,10 +114,10 @@ function init() {
 
 function applyFilters() {
   const q = document.getElementById('search').value.toLowerCase();
-  const dir = document.getElementById('dir-filter').value;
+  const dir = '';
   const year = document.getElementById('year-filter').value;
   const conf = '';
-  const folder = '';
+  const folder = document.getElementById('folder-filter').value;
   const status = document.getElementById('status-filter').value;
   const tag = document.getElementById('tag-filter').value;
 
