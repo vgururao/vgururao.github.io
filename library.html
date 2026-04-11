@@ -14,8 +14,7 @@
   .controls select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
   .controls label { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 4px; }
   table { width: 100%; border-collapse: collapse; background: #fff; }
-  thead th { background: #eef; padding: 10px 16px; text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #555; border-bottom: 2px solid #ddd; cursor: pointer; white-space: nowrap; }
-  thead th:hover { background: #e0e0f8; }
+  thead th { background: #eef; padding: 10px 16px; text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #555; border-bottom: 2px solid #ddd; white-space: nowrap; }
   tbody tr { border-bottom: 1px solid #eee; }
   tbody tr:hover { background: #f9f9ff; }
   td { padding: 10px 16px; vertical-align: top; font-size: 0.875rem; }
@@ -42,10 +41,8 @@
   .folder-humanities { color: #6d28d9; font-weight: 600; }
   .folder-inbox { color: #6b7280; }
   .controls select[multiple] { height: 80px; min-width: 160px; }
-  /* Starred + surfaced indicators */
-  .starred-icon { font-size: 0.8rem; margin-right: 3px; }
+  .starred-icon { font-size: 0.8rem; margin-right: 2px; }
   .surfaced-dot { display: inline-block; width: 7px; height: 7px; background: #22c55e; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-  /* Enriched summary expansion */
   td.summary details { margin-top: 5px; }
   td.summary details summary { cursor: pointer; color: #1a56db; font-size: 0.75rem; list-style: none; user-select: none; }
   td.summary details summary::-webkit-details-marker { display: none; }
@@ -72,13 +69,16 @@
   </select></label>
   <label>Tag: <select id="tag-filter" onchange="applyFilters()"><option value="">All tags</option></select></label>
   <label>Year: <select id="year-filter" onchange="applyFilters()"><option value="">All years</option></select></label>
+  <label>Filter: <select id="special-filter" onchange="applyFilters()">
+    <option value="">All</option>
+    <option value="starred">⭐ Starred</option>
+    <option value="enriched">✎ Has enriched summary</option>
+    <option value="surfaced">🟢 Recently surfaced</option>
+  </select></label>
   <label>Sort: <select id="sort-by" onchange="applyFilters()">
     <option value="title">Title A–Z</option>
     <option value="year-desc">Year ↓</option>
-    <option value="starred">⭐ Starred first</option>
-    <option value="enriched">✎ Enriched first</option>
   </select></label>
-  <label><input type="checkbox" id="surfaced-only" onchange="applyFilters()"> Recently surfaced</label>
 </div>
 
 <table>
@@ -118,22 +118,24 @@ function init() {
 }
 
 function applyFilters() {
-  const q           = document.getElementById('search').value.toLowerCase();
-  const dir         = document.getElementById('dir-filter').value;
-  const year        = document.getElementById('year-filter').value;
-  const conf        = document.getElementById('conf-filter').value;
-  const folder      = document.getElementById('folder-filter').value;
-  const tag         = document.getElementById('tag-filter').value;
-  const sortBy      = document.getElementById('sort-by').value;
-  const surfacedOnly = document.getElementById('surfaced-only').checked;
+  const q = document.getElementById('search').value.toLowerCase();
+  const dir = '';
+  const year = document.getElementById('year-filter').value;
+  const conf = '';
+  const folder = document.getElementById('folder-filter').value;
+  const tag = document.getElementById('tag-filter').value;
+  const special = document.getElementById('special-filter').value;
+  const sortBy = document.getElementById('sort-by').value;
 
   filtered = allEntries.filter(e => {
-    if (dir    && e.source_dir !== dir)                   return false;
-    if (year   && String(e.year) !== year)                return false;
-    if (conf   && e.confidence !== conf)                  return false;
-    if (folder && e.folder !== folder)                    return false;
-    if (tag    && !(e.tags || []).includes(tag))          return false;
-    if (surfacedOnly && !recentlySurfacedPaths.has(e.new_path)) return false;
+    if (dir && e.source_dir !== dir) return false;
+    if (year && String(e.year) !== year) return false;
+    if (conf && e.confidence !== conf) return false;
+    if (folder && e.folder !== folder) return false;
+    if (tag && !(e.tags || []).includes(tag)) return false;
+    if (special === 'starred' && !e.starred) return false;
+    if (special === 'enriched' && !e.enriched_summary) return false;
+    if (special === 'surfaced' && !recentlySurfacedPaths.has(e.new_path)) return false;
     if (q) {
       const hay = [e.title, e.author, e.summary, e.enriched_summary,
                    e.new_path, e.original_path, (e.tags||[]).join(' ')].join(' ').toLowerCase();
@@ -144,19 +146,8 @@ function applyFilters() {
 
   filtered.sort(function(a, b) {
     if (sortBy === 'year-desc') {
-      var ya = parseInt(a.year) || 0, yb = parseInt(b.year) || 0;
+      const ya = parseInt(a.year) || 0, yb = parseInt(b.year) || 0;
       return yb - ya || (a.title||'').localeCompare(b.title||'');
-    }
-    if (sortBy === 'starred') {
-      if (a.starred && !b.starred) return -1;
-      if (!a.starred && b.starred) return 1;
-      return (a.title||'').localeCompare(b.title||'');
-    }
-    if (sortBy === 'enriched') {
-      var ae = !!a.enriched_summary, be = !!b.enriched_summary;
-      if (ae && !be) return -1;
-      if (!ae && be) return 1;
-      return (a.title||'').localeCompare(b.title||'');
     }
     return (a.title||'').localeCompare(b.title||'');
   });
@@ -168,18 +159,18 @@ function applyFilters() {
 
 function render() {
   const start = (currentPage - 1) * PAGE_SIZE;
-  const page  = filtered.slice(start, start + PAGE_SIZE);
+  const page = filtered.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('table-body');
 
   document.getElementById('no-results').style.display = filtered.length === 0 ? '' : 'none';
 
-  tbody.innerHTML = page.map(function(e) {
-    var folderClass = {STEM:'folder-stem',SocialSciences:'folder-social',Humanities:'folder-humanities','_inbox':'folder-inbox'}[e.folder] || '';
-    var tagPills    = (e.tags || []).map(function(t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
-    var folderLabel = e.folder ? '<span class="' + folderClass + '">' + esc(e.folder) + '</span>' : esc(e.source_dir || '');
-    var starBadge     = e.starred ? '<span class="starred-icon" title="Starred">⭐</span>' : '';
-    var surfacedBadge = recentlySurfacedPaths.has(e.new_path) ? '<span class="surfaced-dot" title="Recently surfaced"></span>' : '';
-    var enrichedHtml  = e.enriched_summary
+  tbody.innerHTML = page.map(e => {
+    const folderClass = {STEM:'folder-stem',SocialSciences:'folder-social',Humanities:'folder-humanities','_inbox':'folder-inbox'}[e.folder] || '';
+    const tagPills = (e.tags || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('');
+    const folderLabel = e.folder ? '<span class="' + folderClass + '">' + esc(e.folder) + '</span>' : esc(e.source_dir || '');
+    const starBadge = e.starred ? '<span class="starred-icon" title="Starred">⭐</span>' : '';
+    const surfacedBadge = recentlySurfacedPaths.has(e.new_path) ? '<span class="surfaced-dot" title="Recently surfaced"></span>' : '';
+    const enrichedHtml = e.enriched_summary
       ? '<details><summary>enriched summary</summary><div class="enriched-text">' + esc(e.enriched_summary) + '</div></details>'
       : '';
     return '<tr>' +
