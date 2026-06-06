@@ -4,10 +4,21 @@ Personal site for Venkatesh Rao. Deployed via GitHub Pages at the custom domain 
 
 ## Architecture
 
-Pure static HTML — no build system, no framework, no package.json. Editing files and pushing to `master` is the entire deploy pipeline. GitHub Pages serves the repo root directly.
+Static site with a lightweight Markdown-to-HTML build step. Content lives in `content/*.md`, HTML shells in `templates/*.html`, and `build.py` renders them to `index.html` / `cv.html` at the root. GitHub Pages serves those output files directly.
 
 ```
-git push origin master   # deploy
+python3 build.py          # rebuild index.html and cv.html
+python3 build.py --pdf    # also regenerate CV.pdf from cv.html
+
+git push origin master    # deploy
+```
+
+**To update content:** edit the relevant `content/*.md` file, run `build.py`, then commit and push the regenerated HTML alongside the source.
+
+**Dependencies** (install once):
+```
+/opt/homebrew/bin/python3 -m pip install markdown weasyprint --break-system-packages
+brew install pango   # required by weasyprint for PDF generation
 ```
 
 ## File Map
@@ -65,10 +76,16 @@ A dark-themed status dashboard tracking 41 publishing projects (Site/Ebook/Print
 
 ## Styling Conventions
 
-The main `index.html` uses minimal inline CSS in a `<style>` block — no external stylesheet. The design is intentionally plain and typographic. When editing `index.html`:
-- Keep styles in the `<style>` block in `<head>`, not as inline `style=` attributes
-- Max content width is 800px, centered with `margin: 3% auto`
-- `#quotebox` is the blockquote style used for the Weick quote and bio blurb
+Both `index.html` and `cv.html` are **generated files** — do not edit them directly. Edit `content/index.md` or `content/cv.md` and run `build.py`. The templates (`templates/index.html`, `templates/cv.html`) contain the HTML shell (head, nav, wrappers) and are edited only for structural/meta changes.
+
+All styles live in **`site.css`**, shared by both pages. Do not add inline `<style>` blocks.
+
+Key design parameters:
+- Font: Inter (loaded from Google Fonts), 17px body, line-height 1.65
+- Max content width: 680px, centered via `#pagebox`
+- Links: inherit color, understated `text-decoration-color: #bbb`
+- `#quotebox` and `blockquote` share the same left-border treatment
+- CV-specific layout classes (`.exp-entry`, `.exp-date`, `.exp-body`, `.pdf-link`, `.back`) live at the bottom of `site.css`
 
 ## What's Deployed But Generated Elsewhere
 
