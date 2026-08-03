@@ -1,0 +1,39 @@
+name: Deploy to Cloudflare Pages
+
+# Static site — build.py is run locally and the rendered HTML is committed
+# directly, so this workflow just uploads the current tree as-is.
+#
+# Source/tooling files (build.py, CLAUDE.md, content/, templates/, stories/index.py)
+# are staged out before upload — Cloudflare Pages direct-upload has no reliable
+# ignore-file mechanism (`.assetsignore` only applies to Workers static assets,
+# not classic Pages deploys; `.gitignore` isn't appropriate here since these files
+# are legitimately git-tracked, just not meant to be served).
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stage public files
+        run: |
+          mkdir -p _deploy
+          rsync -a . _deploy/ \
+            --exclude='.git' --exclude='.github' --exclude='.claude' \
+            --exclude='.wrangler' --exclude='.DS_Store' --exclude='_deploy' \
+            --exclude='CLAUDE.md' --exclude='CNAME' --exclude='build.py' \
+            --exclude='content' --exclude='templates' --exclude='stories/index.py'
+
+      - name: Install wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Pages
+        run: wrangler pages deploy _deploy --project-name venkateshrao-static --branch master --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
